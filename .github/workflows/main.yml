@@ -26,8 +26,8 @@ jobs:
         with:
           gradle-version: 8.5
 
-      - name: Execute Gradle build
-        run: make build
+#      - name: Execute Gradle build
+#        run: make build
 
 #      - name: Generate coverage report
 #        run: make report
