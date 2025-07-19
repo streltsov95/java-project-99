@@ -38,6 +38,7 @@ dependencies {
 
 	// Зависимость для работы механизма Spring Data JPA
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+	implementation("org.projectlombok:lombok:1.18.38")
 }
 
 tasks.withType<Test> {
