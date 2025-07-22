@@ -33,20 +33,19 @@ public class User {
     @ToString.Include
     private Long id;
 
-    @NotBlank
     @ToString.Include
     private String firstName;
 
-    @NotBlank
     @ToString.Include
     private String lastName;
 
     @ToString.Include
+    @NotBlank
     @Email
     @Column(unique = true)
     private String email;
 
-    @Size(min = 8)
+    @Size(min = 3)
     private String password;
 
     @CreatedDate
