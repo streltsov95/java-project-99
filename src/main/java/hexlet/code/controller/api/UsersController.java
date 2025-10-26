@@ -6,9 +6,11 @@ import hexlet.code.dto.UserUpdateDTO;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.UserMapper;
 import hexlet.code.repository.UserRepository;
+import hexlet.code.util.UserUtils;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +33,9 @@ public class UsersController {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private UserUtils userUtils;
 
     @GetMapping("")
     @ResponseStatus(HttpStatus.OK)
@@ -60,6 +65,7 @@ public class UsersController {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@userUtils.isCurrentUser(#id)")
     public UserDTO update(@Valid @RequestBody UserUpdateDTO userData, @PathVariable Long id) {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("User with id " + id + " not found"));
@@ -70,6 +76,7 @@ public class UsersController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("@userUtils.isCurrentUser(#id)")
     public void destroy(@PathVariable Long id) {
         userRepository.deleteById(id);
     }
