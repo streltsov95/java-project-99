@@ -10,6 +10,7 @@ import hexlet.code.util.UserUtils;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -38,13 +39,14 @@ public class UsersController {
     private UserUtils userUtils;
 
     @GetMapping("")
-    @ResponseStatus(HttpStatus.OK)
-    public List<UserDTO> index() {
+    public ResponseEntity<List<UserDTO>> index() {
         var users = userRepository.findAll();
         var result = users.stream()
                 .map(userMapper::map)
                 .toList();
-        return result;
+        return ResponseEntity.ok()
+                .header("X-Total-Count", String.valueOf(result.size()))
+                .body(result);
     }
 
     @GetMapping("/{id}")
