@@ -2,9 +2,11 @@ package hexlet.code.controller.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import hexlet.code.dto.UserDTO;
+import hexlet.code.dto.user.UserDTO;
 import hexlet.code.mapper.UserMapper;
 import hexlet.code.model.User;
+import hexlet.code.repository.TaskRepository;
+import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.UserRepository;
 import hexlet.code.util.ModelGenerator;
 import net.datafaker.Faker;
@@ -28,6 +30,7 @@ import java.util.List;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -53,6 +56,12 @@ public class UsersControllerTest {
     private UserRepository userRepository;
 
     @Autowired
+    private TaskStatusRepository taskStatusRepository;
+
+    @Autowired
+    private TaskRepository taskRepository;
+
+    @Autowired
     private ModelGenerator modelGenerator;
 
     @Autowired
@@ -67,6 +76,8 @@ public class UsersControllerTest {
 
     @BeforeEach
     public void setUp() {
+        taskRepository.deleteAll();
+        taskStatusRepository.deleteAll();
         userRepository.deleteAll();
 
         mockMvc = MockMvcBuilders.webAppContextSetup(wac).defaultResponseCharacterEncoding(StandardCharsets.UTF_8)
@@ -96,7 +107,7 @@ public class UsersControllerTest {
     public void testCreate() throws Exception {
         var data = Instancio.of(modelGenerator.getUserModel()).create();
 
-        var request = post("/api/users").with(token).contentType(MediaType.APPLICATION_JSON)
+        var request = post("/api/users").with(jwt()).contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(data));
         mockMvc.perform(request).andExpect(status().isCreated());
 
@@ -141,5 +152,22 @@ public class UsersControllerTest {
         mockMvc.perform(request).andExpect(status().isNoContent());
 
         assertThat(userRepository.existsById(testUser.getId())).isEqualTo(false);
+    }
+
+    @Test
+    public void testDestroyFailed() throws Exception {
+        var testTask = Instancio.of(modelGenerator.getTaskModel()).create();
+
+        var testTaskStatus = Instancio.of(modelGenerator.getTaskStatusModel()).create();
+        testTaskStatus.addTask(testTask);
+        taskStatusRepository.save(testTaskStatus);
+
+        testUser.addTask(testTask);
+        userRepository.save(testUser);
+
+        var request = delete("/api/users/" + testUser.getId()).with(token);
+        mockMvc.perform(request).andExpect(status().isConflict());
+
+        assertTrue(userRepository.existsById(testUser.getId()));
     }
 }

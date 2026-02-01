@@ -1,10 +1,12 @@
 package hexlet.code.controller.api;
 
-import hexlet.code.dto.UserCreateDTO;
-import hexlet.code.dto.UserDTO;
-import hexlet.code.dto.UserUpdateDTO;
+import hexlet.code.dto.user.UserCreateDTO;
+import hexlet.code.dto.user.UserDTO;
+import hexlet.code.dto.user.UserUpdateDTO;
+import hexlet.code.exception.ResourceDestroyNotAllowedException;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.UserMapper;
+import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.UserRepository;
 import hexlet.code.util.UserUtils;
 import jakarta.validation.Valid;
@@ -12,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,6 +34,9 @@ public class UsersController {
     private UserRepository userRepository;
 
     @Autowired
+    private TaskRepository taskRepository;
+
+    @Autowired
     private UserMapper userMapper;
 
     @Autowired
@@ -41,9 +45,11 @@ public class UsersController {
     @GetMapping("")
     public ResponseEntity<List<UserDTO>> index() {
         var users = userRepository.findAll();
+
         var result = users.stream()
                 .map(userMapper::map)
                 .toList();
+
         return ResponseEntity.ok()
                 .header("X-Total-Count", String.valueOf(result.size()))
                 .body(result);
@@ -54,6 +60,7 @@ public class UsersController {
     public UserDTO show(@PathVariable Long id) {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
+
         return userMapper.map(user);
     }
 
@@ -62,6 +69,7 @@ public class UsersController {
     public UserDTO create(@Valid @RequestBody UserCreateDTO userData) {
         var user = userMapper.map(userData);
         userRepository.save(user);
+
         return userMapper.map(user);
     }
 
@@ -70,9 +78,11 @@ public class UsersController {
     @PreAuthorize("@userUtils.isCurrentUser(#id)")
     public UserDTO update(@Valid @RequestBody UserUpdateDTO userData, @PathVariable Long id) {
         var user = userRepository.findById(id)
-                .orElseThrow(() -> new UsernameNotFoundException("User with id " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
+
         userMapper.update(userData, user);
         userRepository.save(user);
+
         return userMapper.map(user);
     }
 
@@ -80,6 +90,13 @@ public class UsersController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("@userUtils.isCurrentUser(#id)")
     public void destroy(@PathVariable Long id) {
-        userRepository.deleteById(id);
+        if (!userRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Resource not found");
+        }
+        if (!taskRepository.existsByAssigneeId(id)) {
+            userRepository.deleteById(id);
+        } else {
+            throw new ResourceDestroyNotAllowedException("Cannot delete user: related task exist");
+        }
     }
 }
