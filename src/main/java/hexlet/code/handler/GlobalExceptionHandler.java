@@ -1,5 +1,6 @@
 package hexlet.code.handler;
 
+import hexlet.code.exception.ResourceDestroyNotAllowedException;
 import hexlet.code.exception.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,4 +16,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
     }
 
+    @ExceptionHandler(ResourceDestroyNotAllowedException.class)
+    public ResponseEntity<String> handleResourceDestroyNotAllowedException(
+            ResourceDestroyNotAllowedException exception
+    ) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(exception.getMessage());
+    }
 }
