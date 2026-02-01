@@ -48,8 +48,8 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-test") //testing package
 
 	implementation("org.openapitools:jackson-databind-nullable:0.2.6") //lib for partial model update
-	implementation("org.mapstruct:mapstruct:1.5.5.Final") //mapper for convert model to dto and back
-	annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final") //annotation handler for mapper code generating
+	implementation("org.mapstruct:mapstruct:1.6.3") //mapper for convert model to dto and back
+	annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3") //annotation handler for mapper code generating
 	implementation("net.datafaker:datafaker:2.5.0")
 }
 
