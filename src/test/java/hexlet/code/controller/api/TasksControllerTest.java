@@ -33,6 +33,7 @@ import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -104,7 +105,7 @@ public class TasksControllerTest {
         taskCreateDto.setTitle("Test title");
         taskCreateDto.setStatus(testTaskStatus.getSlug());
 
-        var request = put("/api/tasks").with(jwt()).contentType(MediaType.APPLICATION_JSON)
+        var request = post("/api/tasks").with(jwt()).contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(taskCreateDto));
         mockMvc.perform(request).andExpect(status().isCreated());
 
