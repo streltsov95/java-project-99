@@ -6,7 +6,6 @@ import hexlet.code.dto.task.TaskUpdateDTO;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.TaskMapper;
 import hexlet.code.repository.TaskRepository;
-import hexlet.code.service.TaskService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,9 +26,6 @@ import java.util.List;
 public class TasksController {
 
     @Autowired
-    private TaskService taskService;
-
-    @Autowired
     private TaskRepository taskRepository;
 
     @Autowired
@@ -38,7 +34,8 @@ public class TasksController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<List<TaskDTO>> index() {
-        var tasks = taskService.getAll();
+
+        var tasks = taskRepository.findAll().stream().map(taskMapper::map).toList();
 
         return ResponseEntity.ok().header("X-Total-Count", String.valueOf(tasks.size())).body(tasks);
     }
