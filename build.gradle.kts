@@ -51,6 +51,8 @@ dependencies {
 	implementation("org.mapstruct:mapstruct:1.6.3") //mapper for convert model to dto and back
 	annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3") //annotation handler for mapper code generating
 	implementation("net.datafaker:datafaker:2.5.0")
+
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.15")
 }
 
 tasks.jacocoTestReport {

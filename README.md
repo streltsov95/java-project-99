@@ -6,3 +6,4 @@
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=streltsov95_java-project-99&metric=coverage)](https://sonarcloud.io/summary/new_code?id=streltsov95_java-project-99)
 
 [Link to application](https://task-tracker-cm9k.onrender.com)
+[OpenAPI documentation](https://task-tracker-cm9k.onrender.com/swagger-ui.html)
