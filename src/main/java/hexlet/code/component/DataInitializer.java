@@ -1,9 +1,12 @@
 package hexlet.code.component;
 
+import hexlet.code.mapper.LabelMapper;
 import hexlet.code.mapper.TaskStatusMapper;
 import hexlet.code.model.User;
+import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.service.CustomUserDetailsService;
+import hexlet.code.util.DefaultLabel;
 import hexlet.code.util.DefaultTaskStatus;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +29,12 @@ public class DataInitializer implements ApplicationRunner {
     @Autowired
     private TaskStatusMapper taskStatusMapper;
 
+    @Autowired
+    private LabelMapper labelMapper;
+
+    @Autowired
+    private LabelRepository labelRepository;
+
     @Override
     public void run(ApplicationArguments args) throws Exception {
         var email = "hexlet@example.com";
@@ -40,5 +49,9 @@ public class DataInitializer implements ApplicationRunner {
         Arrays.stream(DefaultTaskStatus.values())
                 .map(taskStatusMapper::map)
                 .forEach(taskStatusRepository::save);
+
+        Arrays.stream(DefaultLabel.values())
+                .map(labelMapper::map)
+                .forEach(labelRepository::save);
     }
 }
