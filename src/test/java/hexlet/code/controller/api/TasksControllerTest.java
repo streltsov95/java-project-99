@@ -1,20 +1,21 @@
 package hexlet.code.controller.api;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.dto.task.TaskCreateDTO;
-import hexlet.code.dto.task.TaskDTO;
 import hexlet.code.mapper.TaskMapper;
 import hexlet.code.model.Label;
 import hexlet.code.model.Task;
 import hexlet.code.model.TaskStatus;
+import hexlet.code.model.User;
 import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
+import hexlet.code.repository.UserRepository;
 import hexlet.code.util.ModelGenerator;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,7 +26,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -38,6 +39,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -60,6 +63,9 @@ public class TasksControllerTest {
     private LabelRepository labelRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private ObjectMapper om;
 
     @Autowired
@@ -68,11 +74,17 @@ public class TasksControllerTest {
     @Autowired
     private ModelGenerator modelGenerator;
 
+    private User testUser;
+
     private Task testTask;
 
     private TaskStatus testTaskStatus;
 
+    private TaskStatus testTaskStatus2;
+
     private Label testLabel;
+
+    private Label testLabel2;
 
     @BeforeEach
     public void setUp() {
@@ -83,10 +95,17 @@ public class TasksControllerTest {
         mockMvc = MockMvcBuilders.webAppContextSetup(wac).defaultResponseCharacterEncoding(StandardCharsets.UTF_8)
                 .apply(springSecurity()).build();
 
+        testUser = Instancio.of(modelGenerator.getUserModel()).create();
+        userRepository.save(testUser);
+
         testTaskStatus = Instancio.of(modelGenerator.getTaskStatusModel()).create();
         taskStatusRepository.save(testTaskStatus);
 
+        testTaskStatus2 = Instancio.of(modelGenerator.getTaskStatusModel()).create();
+        taskStatusRepository.save(testTaskStatus2);
+
         testLabel = Instancio.of(modelGenerator.getLabelModel()).create();
+        testLabel2 = Instancio.of(modelGenerator.getLabelModel()).create();
 
         testTask = Instancio.of(modelGenerator.getTaskModel()).create();
         testTask.setTaskStatus(testTaskStatus);
@@ -94,38 +113,57 @@ public class TasksControllerTest {
 
     @Test
     public void testIndex() throws Exception {
+        testTask.addLabel(testLabel);
         taskRepository.save(testTask);
 
-        var response = mockMvc.perform(get("/api/tasks").with(jwt())).andExpect(status().isOk()).andReturn()
-                .getResponse();
-        var body = response.getContentAsString();
+        Task testTask2 = Instancio.of(modelGenerator.getTaskModel()).create();
+        testTask2.setTaskStatus(testTaskStatus2);
+        testTask2.setAssignee(userRepository.findById(testUser.getId()).get());
+        testTask2.addLabel(testLabel2);
+        taskRepository.save(testTask2);
 
-        List<TaskDTO> taskDTOS = om.readValue(body, new TypeReference<>() {
-        });
-
-        var actual = taskDTOS.stream().map(taskMapper::map).toList();
-        var expected = taskRepository.findAll();
-
-        assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
+        mockMvc.perform(get("/api/tasks")
+                .queryParam("assigneeId", String.valueOf(testUser.getId()))
+                .queryParam("titleCont", testTask2.getName())
+                .queryParam("status", testTask2.getTaskStatus().getSlug())
+                .queryParam("labelId", String.valueOf(testLabel2.getId()))
+                .with(jwt()))
+                .andExpect(status().isOk())
+                .andExpect(header().string("X-Total-Count", "1"))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.size").value(10))
+                .andExpect(jsonPath("$.number").value(0))
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].title").value(testTask2.getName()))
+                .andExpect(jsonPath("$.content[0].status").value(testTask2.getTaskStatus().getSlug()))
+                .andExpect(jsonPath("$.content[0].assigneeId").value(testUser.getId()))
+                .andExpect(jsonPath("$.content[0].labels").isArray())
+                .andExpect(jsonPath("$.content[0].labels[0]").value(testLabel2.getName()));
     }
 
     @Test
     public void testCreate() throws Exception {
+        labelRepository.save(testLabel);
+
         var taskCreateDto = new TaskCreateDTO();
         taskCreateDto.setTitle("Test title");
         taskCreateDto.setStatus(testTaskStatus.getSlug());
+        taskCreateDto.setLabelNames(JsonNullable.of(Set.of(testLabel.getName())));
 
         var request = post("/api/tasks").with(jwt()).contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(taskCreateDto));
         mockMvc.perform(request).andExpect(status().isCreated());
 
-        var task = taskRepository.findByName(taskCreateDto.getTitle()).orElse(null);
+        var task = taskRepository.findByNameWithLabels(taskCreateDto.getTitle()).orElse(null);
         assertNotNull(task);
         assertThat(task.getTaskStatus().getSlug()).isEqualTo(taskCreateDto.getStatus());
+        assertThat(task.getLabels()).isEqualTo(Set.of(testLabel));
     }
 
     @Test
     public void testShow() throws Exception {
+        testTask.addLabel(testLabel);
         taskRepository.save(testTask);
 
         var request = get("/api/tasks/" + testTask.getId()).with(jwt());
@@ -135,24 +173,31 @@ public class TasksControllerTest {
         assertThatJson(body).and(
                 v -> v.node("title").isEqualTo(testTask.getName()),
                 v -> v.node("content").isEqualTo(testTask.getDescription()),
-                v -> v.node("status").isEqualTo(testTask.getTaskStatus().getSlug())
+                v -> v.node("status").isEqualTo(testTask.getTaskStatus().getSlug()),
+                v -> v.node("labels").isEqualTo(Set.of(testLabel.getName()))
         );
     }
 
     @Test
     public void testUpdate() throws Exception {
+        labelRepository.save(testLabel2);
+
+        testTask.addLabel(testLabel);
         taskRepository.save(testTask);
 
         var data = new HashMap<>();
         data.put("title", "new title");
         data.put("content", "new content");
+        data.put("labelNames", Set.of(testLabel2.getName()));
 
         var request = put("/api/tasks/" + testTask.getId()).with(jwt()).contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(data));
         mockMvc.perform(request).andExpect(status().isOk());
 
-        testTask = taskRepository.findById(testTask.getId()).orElseThrow();
-        assertThat(testTask.getName()).isEqualTo(data.get("title"));
+        testTask = taskRepository.findByNameWithLabels("new title").orElse(null);
+
+        assertNotNull(testTask);
+        assertThat(testTask.getLabels()).isEqualTo(Set.of(testLabel2));
         assertThat(testTask.getDescription()).isEqualTo(data.get("content"));
     }
 
