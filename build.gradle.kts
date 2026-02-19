@@ -76,3 +76,8 @@ tasks.withType<Test> {
 		events("passed", "skipped", "failed")
 	}
 }
+
+tasks.named("sentryUploadSourceBundleJava").configure {
+	enabled = false
+}
+
