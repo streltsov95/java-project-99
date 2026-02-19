@@ -24,3 +24,7 @@ server:
 rsa:
   private-key: classpath:certs/private.pem
   public-key: classpath:certs/public.pem
+
+sentry:
+  dsn: https://d8e86ce3622409272f11ed9eae6f69d7@o4510912515604480.ingest.de.sentry.io/4510912551649360
+  send-default-pii: true

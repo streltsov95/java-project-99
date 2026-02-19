@@ -6,6 +6,7 @@ plugins {
 	id("io.spring.dependency-management") version "1.1.7" //apply spring boot version for packages
 	id("org.sonarqube") version "6.3.1.5724"
 	id("io.freefair.lombok") version "9.0.0"
+	id("io.sentry.jvm.gradle") version "6.0.0"
 }
 
 group = "hexlet.code"
@@ -20,6 +21,14 @@ sonar {
 		property("sonar.projectKey", "streltsov95_java-project-99")
 		property("sonar.organization", "streltsov95")
 	}
+}
+
+sentry {
+	includeSourceContext = true
+
+	org = "self-learning-vm"
+	projectName = "java-spring-boot"
+	authToken = System.getenv("SENTRY_AUTH_TOKEN")
 }
 
 repositories {
