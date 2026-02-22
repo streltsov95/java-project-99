@@ -20,6 +20,7 @@ sonar {
 	properties {
 		property("sonar.projectKey", "streltsov95_java-project-99")
 		property("sonar.organization", "streltsov95")
+		property("sonar.host.url", "https://sonarcloud.io")
 	}
 }
 
