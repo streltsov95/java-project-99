@@ -1,0 +1,67 @@
+package hexlet.code.service.labelservice;
+
+import hexlet.code.dto.label.LabelCreateDTO;
+import hexlet.code.dto.label.LabelDTO;
+import hexlet.code.dto.label.LabelUpdateDTO;
+import hexlet.code.exception.ResourceDestroyNotAllowedException;
+import hexlet.code.exception.ResourceNotFoundException;
+import hexlet.code.mapper.LabelMapper;
+import hexlet.code.repository.LabelRepository;
+import hexlet.code.repository.TaskRepository;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+@AllArgsConstructor
+public class LabelServiceImpl implements LabelService {
+    private final LabelRepository labelRepository;
+    private final LabelMapper labelMapper;
+    private final TaskRepository taskRepository;
+
+    @Override
+    public List<LabelDTO> getAll() {
+        return labelRepository.findAll().stream().map(labelMapper::map).toList();
+    }
+
+    @Override
+    public LabelDTO findById(Long id) {
+        var label = labelRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Label with id " + id + " not found"));
+
+        return labelMapper.map(label);
+    }
+
+    @Override
+    public LabelDTO create(LabelCreateDTO labelData) {
+        var label = labelMapper.map(labelData);
+
+        labelRepository.save(label);
+
+        return labelMapper.map(label);
+    }
+
+    @Override
+    public LabelDTO update(LabelUpdateDTO labelData, Long id) {
+        var label = labelRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Label with id " + id + " not found"));
+
+        labelMapper.update(labelData, label);
+        labelRepository.save(label);
+
+        return labelMapper.map(label);
+    }
+
+    @Override
+    public void delete(Long id) {
+        if (!labelRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Label with id " + id + " not found");
+        }
+        if (taskRepository.existsByLabelsId(id)) {
+            throw new ResourceDestroyNotAllowedException("Cannot delete label: related task exist");
+        } else {
+            labelRepository.deleteById(id);
+        }
+    }
+}
