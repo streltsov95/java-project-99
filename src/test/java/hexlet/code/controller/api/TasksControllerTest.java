@@ -130,16 +130,14 @@ public class TasksControllerTest {
                 .with(jwt()))
                 .andExpect(status().isOk())
                 .andExpect(header().string("X-Total-Count", "1"))
-                .andExpect(jsonPath("$.totalElements").value(1))
-                .andExpect(jsonPath("$.totalPages").value(1))
-                .andExpect(jsonPath("$.size").value(10))
-                .andExpect(jsonPath("$.number").value(0))
-                .andExpect(jsonPath("$.content.length()").value(1))
-                .andExpect(jsonPath("$.content[0].title").value(testTask2.getName()))
-                .andExpect(jsonPath("$.content[0].status").value(testTask2.getTaskStatus().getSlug()))
-                .andExpect(jsonPath("$.content[0].assigneeId").value(testUser.getId()))
-                .andExpect(jsonPath("$.content[0].labels").isArray())
-                .andExpect(jsonPath("$.content[0].labels[0]").value(testLabel2.getName()));
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].status").value(testTask2.getTaskStatus().getSlug()))
+                .andExpect(jsonPath("$[0]assigneeId").value(testTask2.getAssignee().getId()))
+                .andExpect(jsonPath("$[0].title").value(testTask2.getName()))
+                .andExpect(jsonPath("$[0].taskLabelIds").isArray())
+                .andExpect(jsonPath("$[0].taskLabelIds.length()").value(testTask2.getLabels().size()))
+                .andExpect(jsonPath("$[0].taskLabelIds[0]").value(testLabel2.getId()));
     }
 
     @Test
@@ -149,7 +147,7 @@ public class TasksControllerTest {
         var taskCreateDto = new TaskCreateDTO();
         taskCreateDto.setTitle("Test title");
         taskCreateDto.setStatus(testTaskStatus.getSlug());
-        taskCreateDto.setLabelNames(JsonNullable.of(Set.of(testLabel.getName())));
+        taskCreateDto.setTaskLabelIds(JsonNullable.of(Set.of(testLabel.getId())));
 
         var request = post("/api/tasks").with(jwt()).contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(taskCreateDto));
@@ -174,7 +172,7 @@ public class TasksControllerTest {
                 v -> v.node("title").isEqualTo(testTask.getName()),
                 v -> v.node("content").isEqualTo(testTask.getDescription()),
                 v -> v.node("status").isEqualTo(testTask.getTaskStatus().getSlug()),
-                v -> v.node("labels").isEqualTo(Set.of(testLabel.getName()))
+                v -> v.node("taskLabelIds").isEqualTo(Set.of(testLabel.getId()))
         );
     }
 
@@ -188,7 +186,7 @@ public class TasksControllerTest {
         var data = new HashMap<>();
         data.put("title", "new title");
         data.put("content", "new content");
-        data.put("labelNames", Set.of(testLabel2.getName()));
+        data.put("labelIds", Set.of(testLabel2.getId()));
 
         var request = put("/api/tasks/" + testTask.getId()).with(jwt()).contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(data));
