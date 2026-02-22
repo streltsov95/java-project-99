@@ -5,6 +5,7 @@ import hexlet.code.component.TaskStatusResolver;
 import hexlet.code.dto.task.TaskCreateDTO;
 import hexlet.code.dto.task.TaskDTO;
 import hexlet.code.dto.task.TaskUpdateDTO;
+import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.model.Label;
 import hexlet.code.model.Task;
 import hexlet.code.repository.LabelRepository;
@@ -18,6 +19,7 @@ import org.mapstruct.ReportingPolicy;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Mapper(
         uses = { JsonNullableMapper.class, ReferenceMapper.class, TaskStatusResolver.class, LabelResolver.class},
@@ -44,14 +46,14 @@ public abstract class TaskMapper {
     @Mapping(target = "title", source = "name")
     @Mapping(target = "content", source = "description")
     @Mapping(target = "status", source = "taskStatus.slug")
-    @Mapping(target = "labels", source = "labels")
+    @Mapping(target = "taskLabelIds", source = "labels")
     public abstract TaskDTO map(Task model);
 
     @Mapping(target = "assignee", source = "assigneeId")
     @Mapping(target = "name", source = "title")
     @Mapping(target = "description", source = "content")
     @Mapping(target = "taskStatus", source = "status")
-    @Mapping(target = "labels", source = "labels")
+    @Mapping(target = "labels", source = "taskLabelIds")
     public abstract Task map(TaskDTO dto);
 
     @Mapping(target = "assignee", source = "assigneeId")
@@ -61,14 +63,16 @@ public abstract class TaskMapper {
     @Mapping(target = "labels", ignore = true)
     public abstract void update(TaskUpdateDTO dto, @MappingTarget Task model);
 
-    protected String map(Label label) {
-        return label == null ? null : label.getName();
+    protected Set<Long> map(Set<Label> labels) {
+        return labels == null ? null : labels.stream().map(Label::getId).collect(Collectors.toSet());
     }
+
     @AfterMapping
     protected void addLabels(TaskCreateDTO dto, @MappingTarget Task task) {
-        if (dto.getLabelNames() != null && dto.getLabelNames().isPresent()) {
-            dto.getLabelNames().get().forEach(labelName -> {
-                Label label = labelResolver.fromName(labelName);
+        if (dto.getTaskLabelIds() != null && dto.getTaskLabelIds().isPresent()) {
+            dto.getTaskLabelIds().get().forEach(labelId -> {
+                Label label = labelRepository.findById(labelId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Label with id " + labelId + " not found"));
                 task.addLabel(label);
             });
         }
@@ -76,17 +80,18 @@ public abstract class TaskMapper {
 
     @AfterMapping
     protected void updateLabels(TaskUpdateDTO dto, @MappingTarget Task task) {
-        if (dto.getLabelNames() == null || !dto.getLabelNames().isPresent()) {
+        if (dto.getLabelIds() == null || !dto.getLabelIds().isPresent()) {
             return;
         }
-        Set<String> labelNames = dto.getLabelNames().get();
-        if (labelNames == null) {
-            labelNames.clear();
-        }
+        Set<Long> labelIds = dto.getLabelIds().get();
         task.getLabels().clear();
-        labelNames.forEach(labelName -> {
-            Label label = labelResolver.fromName(labelName);
-            task.addLabel(label);
-        });
+        if (labelIds != null) {
+            labelIds.forEach(labelId -> {
+                Label label = labelRepository.findById(labelId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Label with id " + labelId + " not found"));
+                task.addLabel(label);
+            });
+        }
+
     }
 }

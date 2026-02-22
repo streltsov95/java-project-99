@@ -20,7 +20,7 @@ public class TaskCreateDTO {
 
     private JsonNullable<String> content;
 
-    private JsonNullable<Set<String>> labelNames;
+    private JsonNullable<Set<Long>> taskLabelIds;
 
     @NotBlank
     private String status;
