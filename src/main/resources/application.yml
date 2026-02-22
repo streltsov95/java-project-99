@@ -12,7 +12,7 @@ spring:
     hibernate:
       ddl-auto: update
   output:
-    ansible:
+    ansi:
       enabled: always
   profiles:
     active: development
