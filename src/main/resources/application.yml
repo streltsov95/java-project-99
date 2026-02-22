@@ -12,7 +12,7 @@ spring:
     hibernate:
       ddl-auto: update
   output:
-    ansi:
+    ansible:
       enabled: always
   profiles:
     active: development
@@ -26,5 +26,5 @@ rsa:
   public-key: classpath:certs/public.pem
 
 sentry:
-  dsn: ${SENTRY_DSN}
+  dsn: ${SENTRY_DSN:}
   send-default-pii: true
