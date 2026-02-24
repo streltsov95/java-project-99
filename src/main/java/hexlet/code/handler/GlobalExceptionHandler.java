@@ -2,6 +2,7 @@ package hexlet.code.handler;
 
 import hexlet.code.exception.ResourceDestroyNotAllowedException;
 import hexlet.code.exception.ResourceNotFoundException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -22,4 +23,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     ) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(exception.getMessage());
     }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<String> handleDataIntegrityViolationException(DataIntegrityViolationException exception) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body("Cannot delete resource: it is referenced by other entities");
+    }
+
 }
