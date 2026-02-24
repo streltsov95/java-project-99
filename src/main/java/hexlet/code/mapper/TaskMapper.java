@@ -86,12 +86,8 @@ public abstract class TaskMapper {
         Set<Long> labelIds = dto.getLabelIds().get();
         task.getLabels().clear();
         if (labelIds != null) {
-            labelIds.forEach(labelId -> {
-                Label label = labelRepository.findById(labelId)
-                        .orElseThrow(() -> new ResourceNotFoundException("Label with id " + labelId + " not found"));
-                task.addLabel(label);
-            });
+            var labels = labelRepository.findAllById(labelIds);
+            labels.forEach(task::addLabel);
         }
-
     }
 }
