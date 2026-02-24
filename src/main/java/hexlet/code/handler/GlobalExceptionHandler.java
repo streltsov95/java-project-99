@@ -31,4 +31,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .body("Cannot delete resource: it is referenced by other entities");
     }
 
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleAllOtherErrors(Exception exception) {
+        logger.error("Unhandled exception", exception);
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .body("Произошла непредвиденная ошибка на сервере");
+    }
 }
