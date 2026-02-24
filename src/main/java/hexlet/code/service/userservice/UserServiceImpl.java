@@ -3,7 +3,6 @@ package hexlet.code.service.userservice;
 import hexlet.code.dto.user.UserCreateDTO;
 import hexlet.code.dto.user.UserDTO;
 import hexlet.code.dto.user.UserUpdateDTO;
-import hexlet.code.exception.ResourceDestroyNotAllowedException;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.UserMapper;
 import hexlet.code.repository.TaskRepository;
@@ -55,13 +54,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void delete(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Resource not found");
-        }
-        if (!taskRepository.existsByAssigneeId(id)) {
-            userRepository.deleteById(id);
-        } else {
-            throw new ResourceDestroyNotAllowedException("Cannot delete user: related task exist");
-        }
+        userRepository.deleteById(id);
     }
 }

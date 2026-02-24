@@ -3,7 +3,6 @@ package hexlet.code.service.labelservice;
 import hexlet.code.dto.label.LabelCreateDTO;
 import hexlet.code.dto.label.LabelDTO;
 import hexlet.code.dto.label.LabelUpdateDTO;
-import hexlet.code.exception.ResourceDestroyNotAllowedException;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.LabelMapper;
 import hexlet.code.repository.LabelRepository;
@@ -55,13 +54,6 @@ public class LabelServiceImpl implements LabelService {
 
     @Override
     public void delete(Long id) {
-        if (!labelRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Label with id " + id + " not found");
-        }
-        if (taskRepository.existsByLabelsId(id)) {
-            throw new ResourceDestroyNotAllowedException("Cannot delete label: related task exist");
-        } else {
-            labelRepository.deleteById(id);
-        }
+        labelRepository.deleteById(id);
     }
 }

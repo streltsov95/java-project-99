@@ -3,7 +3,6 @@ package hexlet.code.service.taskstatusservice;
 import hexlet.code.dto.taskstatus.TaskStatusCreateDTO;
 import hexlet.code.dto.taskstatus.TaskStatusDTO;
 import hexlet.code.dto.taskstatus.TaskStatusUpdateDTO;
-import hexlet.code.exception.ResourceDestroyNotAllowedException;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.TaskStatusMapper;
 import hexlet.code.repository.TaskRepository;
@@ -53,13 +52,6 @@ public class TaskStatusServiceImpl implements TaskStatusService {
     }
 
     public void delete(Long id) {
-        if (!taskStatusRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Task status with id " + id + " not found");
-        }
-        if (!taskRepository.existsByTaskStatusId(id)) {
-            taskStatusRepository.deleteById(id);
-        } else {
-            throw new ResourceDestroyNotAllowedException("Cannot delete task status: related task exist");
-        }
+        taskStatusRepository.deleteById(id);
     }
 }
