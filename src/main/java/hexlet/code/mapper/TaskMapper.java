@@ -5,7 +5,6 @@ import hexlet.code.component.TaskStatusResolver;
 import hexlet.code.dto.task.TaskCreateDTO;
 import hexlet.code.dto.task.TaskDTO;
 import hexlet.code.dto.task.TaskUpdateDTO;
-import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.model.Label;
 import hexlet.code.model.Task;
 import hexlet.code.repository.LabelRepository;
@@ -70,11 +69,9 @@ public abstract class TaskMapper {
     @AfterMapping
     protected void addLabels(TaskCreateDTO dto, @MappingTarget Task task) {
         if (dto.getTaskLabelIds() != null && dto.getTaskLabelIds().isPresent()) {
-            dto.getTaskLabelIds().get().forEach(labelId -> {
-                Label label = labelRepository.findById(labelId)
-                        .orElseThrow(() -> new ResourceNotFoundException("Label with id " + labelId + " not found"));
-                task.addLabel(label);
-            });
+            Set<Long> labelIds = dto.getTaskLabelIds().get();
+            var labels = labelRepository.findAllById(labelIds);
+            labels.forEach(task::addLabel);
         }
     }
 
