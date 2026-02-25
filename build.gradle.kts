@@ -4,7 +4,7 @@ plugins {
 	jacoco
 	id("org.springframework.boot") version "3.5.3" //add spring commands
 	id("io.spring.dependency-management") version "1.1.7" //apply spring boot version for packages
-	id("org.sonarqube") version "6.3.1.5724"
+	id("org.sonarqube") version "7.1.0.6387"
 	id("io.freefair.lombok") version "9.0.0"
 	id("io.sentry.jvm.gradle") version "6.0.0"
 }
@@ -20,7 +20,6 @@ sonar {
 	properties {
 		property("sonar.projectKey", "streltsov95_java-project-99")
 		property("sonar.organization", "streltsov95")
-		property("sonar.host.url", "https://sonarcloud.io")
 	}
 }
 
