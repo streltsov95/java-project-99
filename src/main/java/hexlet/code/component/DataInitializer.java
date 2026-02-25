@@ -9,7 +9,6 @@ import hexlet.code.service.CustomUserDetailsService;
 import hexlet.code.util.DefaultLabel;
 import hexlet.code.util.DefaultTaskStatus;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
@@ -19,20 +18,10 @@ import java.util.Arrays;
 @Component
 @AllArgsConstructor
 public class DataInitializer implements ApplicationRunner {
-
-    @Autowired
     private final CustomUserDetailsService userService;
-
-    @Autowired
     private TaskStatusRepository taskStatusRepository;
-
-    @Autowired
     private TaskStatusMapper taskStatusMapper;
-
-    @Autowired
     private LabelMapper labelMapper;
-
-    @Autowired
     private LabelRepository labelRepository;
 
     @Override
