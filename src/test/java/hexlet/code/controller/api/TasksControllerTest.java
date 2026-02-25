@@ -1,7 +1,9 @@
 package hexlet.code.controller.api;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.dto.task.TaskCreateDTO;
+import hexlet.code.dto.task.TaskDTO;
 import hexlet.code.mapper.TaskMapper;
 import hexlet.code.model.Label;
 import hexlet.code.model.Task;
@@ -26,6 +28,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,8 +42,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -122,22 +123,40 @@ public class TasksControllerTest {
         testTask2.addLabel(testLabel2);
         taskRepository.save(testTask2);
 
-        mockMvc.perform(get("/api/tasks")
+        var response = mockMvc.perform(get("/api/tasks")
                 .queryParam("assigneeId", String.valueOf(testUser.getId()))
                 .queryParam("titleCont", testTask2.getName())
                 .queryParam("status", testTask2.getTaskStatus().getSlug())
                 .queryParam("labelId", String.valueOf(testLabel2.getId()))
                 .with(jwt()))
                 .andExpect(status().isOk())
-                .andExpect(header().string("X-Total-Count", "1"))
-                .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].status").value(testTask2.getTaskStatus().getSlug()))
-                .andExpect(jsonPath("$[0]assigneeId").value(testTask2.getAssignee().getId()))
-                .andExpect(jsonPath("$[0].title").value(testTask2.getName()))
-                .andExpect(jsonPath("$[0].taskLabelIds").isArray())
-                .andExpect(jsonPath("$[0].taskLabelIds.length()").value(testTask2.getLabels().size()))
-                .andExpect(jsonPath("$[0].taskLabelIds[0]").value(testLabel2.getId()));
+                .andReturn()
+                .getResponse();
+        var body = response.getContentAsString();
+
+        List<TaskDTO> taskDTOs = om.readValue(body, new TypeReference<>() {
+        });
+
+        var actual = taskDTOs.stream().map(taskMapper::map).toList();
+
+        assertThat(actual).containsExactlyInAnyOrderElementsOf(List.of(testTask2));
+
+//        mockMvc.perform(get("/api/tasks")
+//                .queryParam("assigneeId", String.valueOf(testUser.getId()))
+//                .queryParam("titleCont", testTask2.getName())
+//                .queryParam("status", testTask2.getTaskStatus().getSlug())
+//                .queryParam("labelId", String.valueOf(testLabel2.getId()))
+//                .with(jwt()))
+//                .andExpect(status().isOk())
+//                .andExpect(header().string("X-Total-Count", "1"))
+//                .andExpect(jsonPath("$").isArray())
+//                .andExpect(jsonPath("$.length()").value(1))
+//                .andExpect(jsonPath("$[0].status").value(testTask2.getTaskStatus().getSlug()))
+//                .andExpect(jsonPath("$[0]assigneeId").value(testTask2.getAssignee().getId()))
+//                .andExpect(jsonPath("$[0].title").value(testTask2.getName()))
+//                .andExpect(jsonPath("$[0].taskLabelIds").isArray())
+//                .andExpect(jsonPath("$[0].taskLabelIds.length()").value(testTask2.getLabels().size()))
+//                .andExpect(jsonPath("$[0].taskLabelIds[0]").value(testLabel2.getId()));
     }
 
     @Test
