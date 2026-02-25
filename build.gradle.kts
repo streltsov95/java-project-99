@@ -65,6 +65,7 @@ dependencies {
 }
 
 tasks.jacocoTestReport {
+	dependsOn(tasks.test)
 	reports {
 		xml.required.set(true)
 	}
@@ -72,6 +73,7 @@ tasks.jacocoTestReport {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+	finalizedBy(tasks.jacocoTestReport)
 	testLogging {
 		events("passed", "skipped", "failed")
 	}
