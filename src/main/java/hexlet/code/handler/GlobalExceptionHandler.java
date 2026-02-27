@@ -1,6 +1,5 @@
 package hexlet.code.handler;
 
-import hexlet.code.exception.ResourceDestroyNotAllowedException;
 import hexlet.code.exception.ResourceNotFoundException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -15,13 +14,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<String> handleResourceNotFoundException(ResourceNotFoundException exception) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.getMessage());
-    }
-
-    @ExceptionHandler(ResourceDestroyNotAllowedException.class)
-    public ResponseEntity<String> handleResourceDestroyNotAllowedException(
-            ResourceDestroyNotAllowedException exception
-    ) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(exception.getMessage());
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
