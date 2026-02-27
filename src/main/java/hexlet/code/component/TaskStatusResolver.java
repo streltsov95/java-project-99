@@ -3,14 +3,14 @@ package hexlet.code.component;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.model.TaskStatus;
 import hexlet.code.repository.TaskStatusRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@AllArgsConstructor
 public class TaskStatusResolver {
 
-    @Autowired
-    private TaskStatusRepository taskStatusRepository;
+    private final TaskStatusRepository taskStatusRepository;
 
     public TaskStatus fromSlug(String status) {
         return taskStatusRepository.findBySlug(status)
