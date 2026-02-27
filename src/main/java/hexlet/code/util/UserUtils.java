@@ -1,5 +1,6 @@
 package hexlet.code.util;
 
+import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.model.User;
 import hexlet.code.repository.UserRepository;
 import lombok.AllArgsConstructor;
@@ -17,11 +18,14 @@ public class UserUtils {
             return null;
         }
         var email = authentication.getName();
-        return userRepository.findByEmail(email).get();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User with email " + email + " not found"));
     }
 
     public boolean isCurrentUser(long userId) {
-        var userEmail = userRepository.findById(userId).get().getEmail();
+        var userEmail = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User with id " + userId + " not found"))
+                .getEmail();
         var authentication = SecurityContextHolder.getContext().getAuthentication();
         return userEmail.equals(authentication.getName());
     }
