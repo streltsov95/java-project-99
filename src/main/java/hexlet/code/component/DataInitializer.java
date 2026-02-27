@@ -19,10 +19,10 @@ import java.util.Arrays;
 @AllArgsConstructor
 public class DataInitializer implements ApplicationRunner {
     private final CustomUserDetailsService userService;
-    private TaskStatusRepository taskStatusRepository;
-    private TaskStatusMapper taskStatusMapper;
-    private LabelMapper labelMapper;
-    private LabelRepository labelRepository;
+    private final TaskStatusRepository taskStatusRepository;
+    private final TaskStatusMapper taskStatusMapper;
+    private final LabelMapper labelMapper;
+    private final LabelRepository labelRepository;
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
