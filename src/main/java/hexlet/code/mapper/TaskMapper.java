@@ -1,6 +1,5 @@
 package hexlet.code.mapper;
 
-import hexlet.code.component.LabelResolver;
 import hexlet.code.component.TaskStatusResolver;
 import hexlet.code.dto.task.TaskCreateDTO;
 import hexlet.code.dto.task.TaskDTO;
@@ -21,7 +20,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Mapper(
-        uses = { JsonNullableMapper.class, ReferenceMapper.class, TaskStatusResolver.class, LabelResolver.class},
+        uses = { JsonNullableMapper.class, ReferenceMapper.class, TaskStatusResolver.class},
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
         componentModel = MappingConstants.ComponentModel.SPRING,
         unmappedTargetPolicy = ReportingPolicy.IGNORE
@@ -30,9 +29,6 @@ public abstract class TaskMapper {
 
     @Autowired
     private LabelRepository labelRepository;
-
-    @Autowired
-    private LabelResolver labelResolver;
 
     @Mapping(target = "assignee", source = "assigneeId")
     @Mapping(target = "name", source = "title")
