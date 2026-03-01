@@ -13,14 +13,14 @@ public class TaskUpdateDTO {
 
     private JsonNullable<Integer> index;
 
-    private JsonNullable<Long> assigneeId;
+    private JsonNullable<Long> assignee_id;
 
     @NotBlank
     private JsonNullable<String> title;
 
     private JsonNullable<String> content;
 
-    private JsonNullable<Set<Long>> labelIds;
+    private JsonNullable<Set<Long>> taskLabelIds;
 
     @NotBlank
     private JsonNullable<String> status;

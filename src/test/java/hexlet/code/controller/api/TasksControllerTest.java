@@ -205,7 +205,7 @@ public class TasksControllerTest {
         var data = new HashMap<>();
         data.put("title", "new title");
         data.put("content", "new content");
-        data.put("labelIds", Set.of(testLabel2.getId()));
+        data.put("taskLabelIds", Set.of(testLabel2.getId()));
 
         var request = put("/api/tasks/" + testTask.getId()).with(jwt()).contentType(MediaType.APPLICATION_JSON)
                 .content(om.writeValueAsString(data));

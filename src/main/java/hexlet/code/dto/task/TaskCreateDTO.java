@@ -13,7 +13,7 @@ public class TaskCreateDTO {
 
     private JsonNullable<Integer> index;
 
-    private JsonNullable<Long> assigneeId;
+    private JsonNullable<Long> assignee_id;
 
     @NotBlank
     private String title;
