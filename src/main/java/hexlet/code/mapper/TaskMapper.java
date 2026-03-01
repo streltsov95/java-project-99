@@ -64,23 +64,26 @@ public abstract class TaskMapper {
 
     @AfterMapping
     protected void addLabels(TaskCreateDTO dto, @MappingTarget Task task) {
-        if (dto.getTaskLabelIds() != null && dto.getTaskLabelIds().isPresent()) {
-            Set<Long> labelIds = dto.getTaskLabelIds().get();
-            var labels = labelRepository.findAllById(labelIds);
-            labels.forEach(task::addLabel);
+        if (dto.getTaskLabelIds() != null) {
+            dto.getTaskLabelIds().ifPresent(ids -> {
+                if (ids != null) {
+                    var labels = labelRepository.findAllById(ids);
+                    labels.forEach(task::addLabel);
+                }
+            });
         }
     }
 
     @AfterMapping
     protected void updateLabels(TaskUpdateDTO dto, @MappingTarget Task task) {
-        if (dto.getLabelIds() == null || !dto.getLabelIds().isPresent()) {
-            return;
-        }
-        Set<Long> labelIds = dto.getLabelIds().get();
-        task.getLabels().clear();
-        if (labelIds != null) {
-            var labels = labelRepository.findAllById(labelIds);
-            labels.forEach(task::addLabel);
+        if (dto.getLabelIds() != null) {
+            dto.getLabelIds().ifPresent(ids -> {
+                if (ids != null) {
+                    task.getLabels().clear();
+                    var labels = labelRepository.findAllById(ids);
+                    labels.forEach(task::addLabel);
+                }
+            });
         }
     }
 }
