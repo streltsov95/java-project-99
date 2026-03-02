@@ -30,28 +30,28 @@ public abstract class TaskMapper {
     @Autowired
     private LabelRepository labelRepository;
 
-    @Mapping(target = "assignee", source = "assignee_id")
+    @Mapping(target = "assignee", source = "assigneeId")
     @Mapping(target = "name", source = "title")
     @Mapping(target = "description", source = "content")
     @Mapping(target = "taskStatus", source = "status")
     @Mapping(target = "labels", ignore = true)
     public abstract Task map(TaskCreateDTO dto);
 
-    @Mapping(target = "assignee_id", source = "assignee.id")
+    @Mapping(target = "assigneeId", source = "assignee.id")
     @Mapping(target = "title", source = "name")
     @Mapping(target = "content", source = "description")
     @Mapping(target = "status", source = "taskStatus.slug")
     @Mapping(target = "taskLabelIds", source = "labels")
     public abstract TaskDTO map(Task model);
 
-    @Mapping(target = "assignee", source = "assignee_id")
+    @Mapping(target = "assignee", source = "assigneeId")
     @Mapping(target = "name", source = "title")
     @Mapping(target = "description", source = "content")
     @Mapping(target = "taskStatus", source = "status")
     @Mapping(target = "labels", source = "taskLabelIds")
     public abstract Task map(TaskDTO dto);
 
-    @Mapping(target = "assignee", source = "assignee_id")
+    @Mapping(target = "assignee", source = "assigneeId")
     @Mapping(target = "name", source = "title")
     @Mapping(target = "description", source = "content")
     @Mapping(target = "taskStatus", source = "status")
